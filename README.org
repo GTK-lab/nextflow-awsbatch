@@ -14,11 +14,11 @@ Let's try to construct a phylogenetic tree based on orthologs of the human haemo
 - Mice, Hba-a1 or [[https://asia.ensembl.org/Mus_musculus/Gene/Summary?g=ENSMUSG00000069919;r=11:32283511-32284465][ENSMUSG00000069919]].
 - Zebrafish, zgc:163057 or [[https://asia.ensembl.org/Danio_rerio/Gene/Summary?g=ENSDARG00000045144;r=12:20336070-20337274;t=ENSDART00000066385][ENSDARG00000045144]].
 
-Download those gene sequences and combine them into a single fasta file, [[./hba1.fasta.gz]].
+Download those gene sequences and combine them into a single fasta file, [[hba1.fasta.gz]].
 
 # We could write a few paragraphs here that slowly build up toward hba-local.nf.
 
-In the end, you should end up with a file like [[./hba-local.nf]].
+In the end, you should end up with a file like [[hba-local.nf]].
 
 * Using Nextflow with Docker Containers
 
@@ -40,7 +40,7 @@ process buildTree {
 #+end_src
 
 You should have a nextflow script which looks like [[hba-docker.nf]].
-And also create a new file, ~nextflow.config~.
+And also create a new file, [[nextflow.config]] which looks like:
 
 #+begin_src
 profiles {
@@ -58,5 +58,25 @@ nextflow run hba-docker.nf -profile docker
 #+end_src
 
 * Using Nextflow with AWS S3
+
+This is as simple as adding the ~s3~ protocol to the input file path:
+
+#+begin_src
+hbaSequences = Channel.fromPath("s3://nextflow-awsbatch/hba1.fasta.gz")
+#+end_src
+
+And doing the same for the publish directory:
+
+#+begin_src
+process buildTree {
+    container "biocontainers/fasttree:v2.1.10-2-deb_cv1"
+    publishDir "s3://nextflow-awsbatch/"
+
+    /...
+}
+#+end_src
+
+You should have a Nextflow script that looks like [[hba-s3.nf]].
+
 * Using Nextflow with AWS Batch
 * A larger example: COVID-19 in Singapore
