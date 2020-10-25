@@ -1,0 +1,20 @@
+#+TITLE: Nextflow with AWS Batch: A Worked Example
+
+* Using Nextflow Locally
+
+Let's try to construct a phylogenetic tree based on orthologs of the human haemogoblin alpha 1 subunit.
+
+- Humans, HBA1 or [[https://asia.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000206172;r=16:176680-177522][ENSG00000206172]].
+- Mice, Hba-a1 or [[https://asia.ensembl.org/Mus_musculus/Gene/Summary?g=ENSMUSG00000069919;r=11:32283511-32284465][ENSMUSG00000069919]].
+- Zebrafish, zgc:163057 or [[https://asia.ensembl.org/Danio_rerio/Gene/Summary?g=ENSDARG00000045144;r=12:20336070-20337274;t=ENSDART00000066385][ENSDARG00000045144]].
+
+Download those gene sequences and combine them into a single fasta file, [[./hba1.fasta.gz][~hba1.fasta.gz~]].
+
+# We could write a few paragraphs here that slowly build up toward hba-local.nf.
+
+In the end, you should end up with a file like [[./hba-local.nf][~hba-local.nf~]].
+
+* Using Nextflow with Docker Containers
+* Using Nextflow with AWS S3
+* Using Nextflow with AWS Batch
+* A larger example: COVID-19 in Singapore
