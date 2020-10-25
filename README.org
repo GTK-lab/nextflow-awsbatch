@@ -1,5 +1,11 @@
 #+TITLE: Nextflow with AWS Batch: A Worked Example
 
+* Introduction
+** Requirements
+
+- MAFFT
+- FastTree
+
 * Using Nextflow Locally
 
 Let's try to construct a phylogenetic tree based on orthologs of the human haemogoblin alpha 1 subunit.
@@ -8,13 +14,49 @@ Let's try to construct a phylogenetic tree based on orthologs of the human haemo
 - Mice, Hba-a1 or [[https://asia.ensembl.org/Mus_musculus/Gene/Summary?g=ENSMUSG00000069919;r=11:32283511-32284465][ENSMUSG00000069919]].
 - Zebrafish, zgc:163057 or [[https://asia.ensembl.org/Danio_rerio/Gene/Summary?g=ENSDARG00000045144;r=12:20336070-20337274;t=ENSDART00000066385][ENSDARG00000045144]].
 
-Download those gene sequences and combine them into a single fasta file, [[./hba1.fasta.gz][~hba1.fasta.gz~]].
+Download those gene sequences and combine them into a single fasta file, [[./hba1.fasta.gz]].
 
 # We could write a few paragraphs here that slowly build up toward hba-local.nf.
 
-In the end, you should end up with a file like [[./hba-local.nf][~hba-local.nf~]].
+In the end, you should end up with a file like [[./hba-local.nf]].
 
 * Using Nextflow with Docker Containers
+
+Simply add the appropriate ~container~ directive to each process:
+
+#+begin_src
+process alignMultipleSequences {
+    container "biocontainers/mafft:v7.407-2-deb_cv1"
+
+    // ...
+}
+
+process buildTree {
+    container "biocontainers/fasttree:v2.1.10-2-deb_cv1"
+    publishDir './'
+
+    // ...
+}
+#+end_src
+
+You should have a nextflow script which looks like [[hba-docker.nf]].
+And also create a new file, ~nextflow.config~.
+
+#+begin_src
+profiles {
+    docker {
+        docker.enabled = true
+    }
+}
+#+end_src
+
+Now, using the same command ~nextflow run hba-docker.nf~ will /not/ cause Nextflow to use docker.
+You must also specify using the ~-profile docker~ command line argument that docker /should/ be used.
+
+#+begin_src bash
+nextflow run hba-docker.nf -profile docker
+#+end_src
+
 * Using Nextflow with AWS S3
 * Using Nextflow with AWS Batch
 * A larger example: COVID-19 in Singapore
