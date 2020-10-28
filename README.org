@@ -80,3 +80,6 @@ You should have a Nextflow script that looks like [[hba-s3.nf]].
 
 * Using Nextflow with AWS Batch
 * A larger example: COVID-19 in Singapore
+* Changes
+** 28 Oct 2020 - Marcus
+- Addition of `awsbatch` profile to the configuration file
