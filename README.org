@@ -1,5 +1,15 @@
 #+TITLE: Nextflow with AWS Batch: A Worked Example
 
+1. [[* Introduction][Introduction]]
+2. [[*Using Nextflow Locally][Using Nextflow Locally]]
+   1. [[* Channels][Channels]]
+   2. [[* Processes][Processes]]
+   3. [[* workDir and publishDir][workDir and publishDir]]
+3. [[*Using Nextflow with Docker Containers][Using Nextflow with Docker Containers]]
+4. [[* Using Nextflow with AWS S3][Using Nextflow with AWS S3]]
+5. [[* Using Nextflow with AWS Batch][Using Nextflow with AWS Batch]]
+6. [[* A larger example: COVID-19 in Singapore][A larger example: COVID-19 in Singapore]]
+
 * Introduction
 
 [[https://www.nextflow.io/][Nextflow]] is a workflow management system in the vein of Snakemake or even GNU Make.
@@ -11,7 +21,7 @@ To do so, we use [[https://mafft.cbrc.jp/alignment/software/][MAFFT]] for multip
 * Using Nextflow Locally
 
 In this first section, we will construct a small phylogenetic tree based on orthologs of the human haemogoblin alpha 1 subunit.
-Three sequences are provided in the FASTA file at [[hba1.fasta.gz]]:
+Three sequences are provided in the FASTA file at [[./hba1.fasta.gz][hba1.fasta.gz]]:
 
 - Humans, HBA1 or [[https://asia.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000206172;r=16:176680-177522][ENSG00000206172]].
 - Mice, Hba-a1 or [[https://asia.ensembl.org/Mus_musculus/Gene/Summary?g=ENSMUSG00000069919;r=11:32283511-32284465][ENSMUSG00000069919]].
@@ -21,7 +31,7 @@ Three sequences are provided in the FASTA file at [[hba1.fasta.gz]]:
 
 [[https://www.nextflow.io/docs/latest/channel.html][Channels]] are sources of data.
 They are useful for holding input or intermediate files.
-For example, to store our sequences from the aforementioned [[hba1.fasta.gz]] into a channel, we can use the ~fromPath~ method to create a channel named ~hbaSequences~ containing that single FASTA file.
+For example, to store our sequences from the aforementioned [[./hba1.fasta.gz][hba1.fasta.gz]] into a channel, we can use the ~fromPath~ method to create a channel named ~hbaSequences~ containing that single FASTA file.
 Create a file named hba1-local.nf, and write:
 
 #+begin_src
@@ -91,7 +101,7 @@ process buildTree {
 }
 #+end_src
 
-In the end, you should end up with a file like [[hba-local.nf]].
+In the end, you should end up with a file like [[./hba-local.nf][hba-local.nf]].
 Now, if we execute the script with ~nextflow run hba-local.nf~, there should be an output file ~hba-tree~ produced in the current working directory.
 
 * Using Nextflow with Docker Containers
@@ -113,8 +123,8 @@ process buildTree {
 }
 #+end_src
 
-You should have a nextflow script which looks like [[hba-docker.nf]].
-And also create a new file, [[nextflow.config]] which looks like:
+You should have a nextflow script which looks like [[./hba-docker.nf][hba-docker.nf]].
+And also create a new file, [[./nextflow.config][nextflow.config]] which looks like:
 
 #+begin_src
 profiles {
@@ -150,7 +160,7 @@ process buildTree {
 }
 #+end_src
 
-You should have a Nextflow script that looks like [[hba-s3.nf]].
+You should have a Nextflow script that looks like [[./hba-s3.nf][hba-s3.nf]].
 
 * Using Nextflow with AWS Batch
 * A larger example: COVID-19 in Singapore
