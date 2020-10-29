@@ -1,24 +1,98 @@
 #+TITLE: Nextflow with AWS Batch: A Worked Example
 
 * Introduction
-** Requirements
 
-- MAFFT
-- FastTree
+[[https://www.nextflow.io/][Nextflow]] is a workflow management system in the vein of Snakemake or even GNU Make.
+Nextflow makes containerisation and configuration for cloud computing easy, allowing for reproducible and scalable computational analysis.
+
+In this post, we provide a worked example of Nextflow in the construction of a phylogenetic tree.
+To do so, we use [[https://mafft.cbrc.jp/alignment/software/][MAFFT]] for multiple sequence alignment, and [[http://www.microbesonline.org/fasttree/][FastTree]] for tree construction.
 
 * Using Nextflow Locally
 
-Let's try to construct a phylogenetic tree based on orthologs of the human haemogoblin alpha 1 subunit.
+In this first section, we will construct a small phylogenetic tree based on orthologs of the human haemogoblin alpha 1 subunit.
+Three sequences are provided in the FASTA file at [[hba1.fasta.gz]]:
 
 - Humans, HBA1 or [[https://asia.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000206172;r=16:176680-177522][ENSG00000206172]].
 - Mice, Hba-a1 or [[https://asia.ensembl.org/Mus_musculus/Gene/Summary?g=ENSMUSG00000069919;r=11:32283511-32284465][ENSMUSG00000069919]].
 - Zebrafish, zgc:163057 or [[https://asia.ensembl.org/Danio_rerio/Gene/Summary?g=ENSDARG00000045144;r=12:20336070-20337274;t=ENSDART00000066385][ENSDARG00000045144]].
 
-Download those gene sequences and combine them into a single fasta file, [[hba1.fasta.gz]].
+** Channels
 
-# We could write a few paragraphs here that slowly build up toward hba-local.nf.
+[[https://www.nextflow.io/docs/latest/channel.html][Channels]] are sources of data.
+They are useful for holding input or intermediate files.
+For example, to store our sequences from the aforementioned [[hba1.fasta.gz]] into a channel, we can use the ~fromPath~ method to create a channel named ~hbaSequences~ containing that single FASTA file.
+Create a file named hba1-local.nf, and write:
+
+#+begin_src
+hbaSequences = Channel.fromPath("hba1.fasta.gz")
+#+end_src
+
+To execute this nextflow script, simply use the nextflow subcommand ~run~:
+
+#+begin_src
+nextflow run hba1-local.nf
+#+end_src
+
+Nothing will happen just yet, but that's to be expected: We've declared our data, but we haven't yet defined what should be done to that data!
+
+** Processes
+
+[[https://www.nextflow.io/docs/latest/process.html][Processes]] can act on data from channels.
+Processes start with the ~process~ keyword, followed by a name, then a block body.
+The data which the process acts on is specified by the ~input:~ keyword, and ~output:~ declares the data output by the process.
+At the end of the block body is the ~script~ which is to be executed.
+
+For example, a process to align the sequences from our just-created ~hbaSequences~ can be written like:
+
+#+begin_src
+process {
+    input: file sequences from hbaSequences
+    output: file "hba-alignment.fasta.gz" into hbaAlignment
+
+    """
+    gunzip --to-stdout $sequences | mafft --auto - > hba-alignment.fasta
+    gzip hba-alignment.fasta
+    """"
+}
+#+end_src
+
+Note that the output implicitly creates a new channel named ~hbaAlignment~ which contains the single file hba-alignment.fasta.gz output by the script.
+This new channel can then be used in a subsequent tree construction process:
+
+#+begin_src
+process buildTree {
+    input: file alignment from hbaAlignment
+    output: file "hba-tree" into hbaTree
+
+    """
+    gunzip --to-stdout $alignment | FastTree > hba-tree
+    """
+}
+#+end_src
+
+** workDir and publishDir
+
+By default, processes create their output files in the Nextflow-managed ~workDir~, which is usually a directory named "work" in the current working directory.
+In order to place process output files elsewhere, you will need to specify the ~publishDir~ using the ~publishDir~ directive.
+
+So, if we want to place the tree file produced by the ~buildTree~ process in the current working directory, we can rewrite it as:
+
+#+begin_src
+process buildTree {
+    publishDir './'
+
+    input: file alignment from hbaAlignment
+    output: file "hba-tree" into hbaTree
+
+    """
+    gunzip --to-stdout $alignment | FastTree > hba-tree
+    """
+}
+#+end_src
 
 In the end, you should end up with a file like [[hba-local.nf]].
+Now, if we execute the script with ~nextflow run hba-local.nf~, there should be an output file ~hba-tree~ produced in the current working directory.
 
 * Using Nextflow with Docker Containers
 
