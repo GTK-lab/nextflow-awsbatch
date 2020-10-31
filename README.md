@@ -106,7 +106,10 @@ Now, if we execute the script with `nextflow run hba-local.nf`, there should be 
 
 ## Using Nextflow with Docker Containers
 
-Simply add the appropriate `container` directive to each process:
+Next, let's try to containerise each of our two processes.
+This can be done in three steps.
+
+First, specify the docker containers to be used for each process in the nextflow script file, using the `container` directive.
 
 ```groovy
 process alignMultipleSequences {
@@ -123,8 +126,10 @@ process buildTree {
 }
 ```
 
-You should have a nextflow script which looks like [hba-docker.nf](./hba-docker.nf).
-And also create a new file, [nextflow.config](./nextflow.config) which looks like:
+This should result in a modified nextflow script which looks like [hba-docker.nf](./hba-docker.nf).
+
+Secondly, we need to specify a *profile* via a [configuration file](https://www.nextflow.io/docs/latest/config.html).
+Create a new file `nextflow.config`, and define a new profile `docker` which sets the `enabled` property of the `docker` scope to `true`.
 
 ```groovy
 profiles {
@@ -134,14 +139,15 @@ profiles {
 }
 ```
 
-Now, using the same command `nextflow run hba-docker.nf` will *not* cause Nextflow to use docker.
-You must also specify using the `-profile docker` argument to let Nextflow know that docker /should/ be used.
+Lastly, run nextflow with the `-profile docker` argument.
+That's `-profile` with a single dash, not `--profile` --- Nextflow silently ignores unrecognised command line arguments, so make sure you type this one correctly!
 
 ```groovy
 nextflow run hba-docker.nf -profile docker
 ```
 
-This is not a bug, but a feature --- now, you can choose between "direct" and containerised execution environments with just one command-line argument!
+Without the `-profile docker` argument, Nextflow will not use the docker containers.
+This allows one to alternate between "direct" local and containerised execution environments by changing command line arguments only.
 
 ## Using Nextflow with AWS S3
 
