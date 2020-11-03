@@ -21,6 +21,7 @@ process buildTree {
 
     input: file alignment from hbaAlignment
     output: file "hba-tree" into hbaTree
+    memory: 16.GB
 
     """
     gunzip --to-stdout $alignment | FastTree > hba-tree
