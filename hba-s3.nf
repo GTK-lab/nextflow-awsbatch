@@ -18,10 +18,11 @@ process alignMultipleSequences {
 process buildTree {
     container "biocontainers/fasttree:v2.1.10-2-deb_cv1"
     publishDir "s3://nextflow-awsbatch/"
+    memory '16 GB'
 
     input: file alignment from hbaAlignment
     output: file "hba-tree" into hbaTree
-    memory: 16.GB
+
 
     """
     gunzip --to-stdout $alignment | FastTree > hba-tree
