@@ -1,6 +1,7 @@
 #! /usr/bin/env nextflow
 
-hbaSequences = Channel.fromPath("s3://nextflow-awsbatch/hba1.fasta.gz")
+// hbaSequences = Channel.fromPath("s3://nextflow-awsbatch/hba1.fasta.gz")
+hbaSequences = Channel.fromPath("s3://nextflow-awsbatch/sars-cov2-singapore.fasta.gz")
 
 process alignMultipleSequences {
     container "biocontainers/mafft:v7.407-2-deb_cv1"
