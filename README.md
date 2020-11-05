@@ -246,7 +246,7 @@ process buildTree {
     // ...
 ```
 
-Given the large number of sequences involved, this process can take about 4-5 hours to run from start to finish. Once completed, visualize your tree using your a phylogenetic tree viewer of your choice!
+Given the large number of sequences involved, this process can take about 4-5 hours to run from start to finish. Once completed, visualize your tree using the phylogenetic tree viewer of your choice!
 
 <div align="center">
 <img src="covid-tree.png">
