@@ -189,7 +189,7 @@ The (i) use of Docker containers has already been covered in ["Using Nextflow wi
 Just as with docker, we will create a new profile `awsbatch` in our configuration file to provide Nextflow with the information it needs to use AWS Batch.
 Minimally, you will only need to set four variables:
 
-``groovy
+```groovy
 profiles {
     docker {
         docker.enabled = true
