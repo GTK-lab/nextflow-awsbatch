@@ -8,7 +8,9 @@
 3. [Using Nextflow with Docker Containers](#using-nextflow-with-docker-containers)
 4. [Using Nextflow with AWS S3](#using-nextflow-with-aws-s3)
 5. [Using Nextflow with AWS Batch](#using-nextflow-with-aws-batch)
-6. [A larger example: COVID-19 in Singapore](#a-larger-example-covid-19-in-singapore)
+    1. [Configurations for AWS](#configurations-for-aws)
+    2. [Specifying a S3 bucket as work directory](#specifying-a-s3-bucket-as-work-directory)
+6. [A larger example: SARS-CoV-2 in Singapore](#a-larger-example-sars-cov-2-in-singapore)
 
 ## Introduction
 
@@ -103,6 +105,11 @@ process buildTree {
 
 In the end, you should end up with a file like [hba-local.nf](./hba-local.nf).
 Now, if we execute the script with `nextflow run hba-local.nf`, there should be an output file `hba-tree` produced in the current working directory.
+Visualise this tree with any tree visualiser to make sure it's working (we used [iroki.net](https://www.iroki.net/))!
+
+<div align="center">
+<img src="hba-tree.png">
+</div>
 
 ## Using Nextflow with Docker Containers
 
@@ -139,8 +146,7 @@ profiles {
 }
 ```
 
-Lastly, run nextflow with the `-profile docker` argument.
-That's `-profile` with a single dash, not `--profile` --- Nextflow silently ignores unrecognised command line arguments, so make sure you type this one correctly!
+Lastly, run nextflow with the `-profile docker` argument (that's `-profile` with a single-dash, not `--profile`!)
 
 ```groovy
 nextflow run hba-docker.nf -profile docker
@@ -151,30 +157,91 @@ This allows one to alternate between "direct" local and containerised execution 
 
 ## Using Nextflow with AWS S3
 
-This is as simple as adding the `s3` protocol to the input file path:
+If you're working with AWS, you might have or may want to store your files on S3.
+Nextflow supports using and publishing to S3: simply use the `s3` protocol in your file paths:
 
 ```groovy
 hbaSequences = Channel.fromPath("s3://nextflow-awsbatch/hba1.fasta.gz")
+// ...
+
+process buildTree {
+    container "biocontainers/fasttree:v2.1.10-2-deb_cv1"
+    publishDir "s3://nextflow-awsbatch/"
+
+    // ...
+}
 ```
 
-And doing the same for the publish directory `publishDir`:
+Using S3, you should have a Nextflow script that looks like [hba-s3.nf](./hba-s3.nf).
+
+## Using Nextflow with AWS Batch
+
+For Nextflow to use AWS Batch, you must first
+(i) specify publicly available Docker containers for some of your processes,
+(ii) set-up a compute environment (possibly with a custom AMI) and job queue on AWS,
+(ii) configure AWS in the configuration file, and
+(iii) specify a S3 bucket to use as working directory for intermediate files.
+
+The (i) use of Docker containers has already been covered in ["Using Nextflow with Docker Containers"](#using-nextflow-with-docker-containers), and we will skip (ii) setting up AWS as well in order to focus on Nextflow.
+
+### Configurations for AWS
+
+Just as with docker, we will create a new profile `awsbatch` in our configuration file to provide Nextflow with the information it needs to use AWS Batch.
+Minimally, you will only need to set four variables:
+
+``groovy
+profiles {
+    docker {
+        docker.enabled = true
+    }
+
+    // Set up a new awsbatch profile
+    awsbatch {
+        process.executor = 'awsbatch'
+        process.queue = 'nextflow-awsbatch-queue-2'
+        aws.region = 'ap-southeast-1'
+        aws.batch.cliPath = '/home/ec2-user/miniconda/bin/aws'
+    }
+}
+```
+
+Make sure to replace `process.queue` with the name of your job queue in AWS Batch, `aws.region` with the AWS region you are operating on, and `aws.batch.cliPath` with the file path to the AWS CLI binary on the AMI you have configured for your compute environment.
+If you are certain that the AMI you are using will have the AWS CLI in its `$PATH`, then it is okay to omit the `aws.batch.cliPath` line.
+
+### Specifying a S3 bucket as work directory.
+
+Note that this work directory is *not* the same as the ["Using Nextflow with AWS S3"](#using-nextflow-with-aws-s3) — that previous section only specified S3 as the input and output directories.
+Here, we are providing a bucket for Nextflow to store intermediate files.
+This is accomplished by means of an additional command-line flag `-work-dir` (or equivalently, `-bucket-dir`).
+
+```
+nextflow run hba-s3.nf -profile awsbatch -work-dir s3://nextflow-awsbatch/temp
+```
+
+Take note of how the new profile is being used: `-profile awsbatch`.
+
+## A larger example: SARS-CoV-2 in Singapore
+
+Now, let's try to scale our analysis up from three HBA sequences to a thousand SARS-CoV-2 viral genomes.
+First, download a collection of SARS-CoV-2 genomes from the [GISAID database](https://www.gisaid.org/) (registration required), filtering by location to "Asia/Singapore" (or your region of choice).
+Next, upload the gzipped FASTA file of the downloaded genomes onto AWS S3.
+
+Now, all we have to do is to replace the input channel path with the newly uploaded SARS-CoV-2 genomes:
+
+```groovy
+covidSequences = Channel.fromPath("s3://nextflow-awsbatch/sars-cov2-singapore.fasta.gz")
+
+// ...also change the variable names so that they are self-documenting!
+```
+
+and the `alignMultipleSequences` process is good to go!
+However the `buildTree` process might fail as a result of running out of memory, so we will also increase the memory allocated to that process using the `memory` directive:
 
 ```groovy
 process buildTree {
     container "biocontainers/fasttree:v2.1.10-2-deb_cv1"
     publishDir "s3://nextflow-awsbatch/"
+    memory "16 GB"
 
-    //...
-}
+    // ...
 ```
-
-You should have a Nextflow script that looks like [hba-s3.nf](./hba-s3.nf).
-
-### Using Nextflow with AWS Batch
-
-### A larger example: COVID-19 in Singapore
-
-### Changes
-
-- 28 Oct 2020 - Marcus
-  - Addition of `awsbatch` profile to the configuration file

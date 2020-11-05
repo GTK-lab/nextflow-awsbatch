@@ -1,5 +1,3 @@
-#! /usr/bin/env nextflow
-
 hbaSequences = Channel.fromPath("hba1.fasta.gz")
 
 process alignMultipleSequences {
@@ -13,7 +11,7 @@ process alignMultipleSequences {
 }
 
 process buildTree {
-    publishDir './'
+    publishDir "./"
 
     input: file alignment from hbaAlignment
     output: file "hba-tree" into hbaTree
