@@ -105,7 +105,7 @@ process buildTree {
 
 In the end, you should end up with a file like [hba-local.nf](./hba-local.nf).
 Now, if we execute the script with `nextflow run hba-local.nf`, there should be an output file `hba-tree` produced in the current working directory.
-Visualise this tree with any tree visualiser to make sure it's working (we used [iroki.net](https://www.iroki.net/))!
+Visualise this tree with any tree visualiser to make sure it's working (we used [iroki.net](https://www.iroki.net/)).
 
 <div align="center">
 <img src="hba-tree.png">
@@ -223,7 +223,7 @@ Take note of how the new profile is being used: `-profile awsbatch`.
 ## A larger example: SARS-CoV-2 in Singapore
 
 Now, let's try to scale our analysis up from three HBA sequences to a thousand SARS-CoV-2 viral genomes.
-First, download a collection of SARS-CoV-2 genomes from the [GISAID database](https://www.gisaid.org/) (registration required), filtering by location to "Asia/Singapore" (or your region of choice).
+First, download a collection of SARS-CoV-2 genomes from the [GISAID database](https://www.gisaid.org/) (registration required), filtering by location to "Asia/Singapore" or region of your liking.
 Next, upload the gzipped FASTA file of the downloaded genomes onto AWS S3.
 
 Now, all we have to do is to replace the input channel path with the newly uploaded SARS-CoV-2 genomes:
@@ -245,6 +245,8 @@ process buildTree {
 
     // ...
 ```
+
+You should end up with a script which looks like [hba-covid.nf](./hba-covid.nf).
 
 Given the large number of sequences involved, this process can take about 4-5 hours to run from start to finish. Once completed, visualize your tree using the phylogenetic tree viewer of your choice!
 
