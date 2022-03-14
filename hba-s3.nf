@@ -1,4 +1,4 @@
-hbaSequences = Channel.fromPath("s3://nextflow-awsbatch/hba1.fasta.gz")
+hbaSequences = Channel.fromPath("s3://bl5632/hba1.fasta.gz")
 
 process alignMultipleSequences {
     container "biocontainers/mafft:v7.407-2-deb_cv1"
@@ -14,7 +14,7 @@ process alignMultipleSequences {
 
 process buildTree {
     container "biocontainers/fasttree:v2.1.10-2-deb_cv1"
-    publishDir "s3://nextflow-awsbatch/"
+    publishDir "s3://bl5632"
 
     input: file alignment from hbaAlignment
     output: file "hba-tree" into hbaTree
