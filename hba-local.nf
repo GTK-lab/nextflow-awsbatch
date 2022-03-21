@@ -5,8 +5,7 @@ process alignMultipleSequences {
     output: file "hba-alignment.fasta.gz" into hbaAlignment
 
     """
-    gunzip --to-stdout $sequences | mafft --auto - > hba-alignment.fasta
-    gzip hba-alignment.fasta
+    zcat $sequences | mafft --auto - > hba-alignment.fasta
     """
 }
 
